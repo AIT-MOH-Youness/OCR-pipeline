@@ -24,7 +24,7 @@ pipeline {
         stage('Run tests') {
             steps {
                 sh '''
-                    pwd
+                    export PYTHONPATH="/var/jenkins_home/workspace/OCR-Job"
                     # Activate the virtual environment
                     . venv/bin/activate
                     # Now pytest is available
@@ -35,7 +35,7 @@ pipeline {
 
         stage('SonarQube analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') {
+                withSonarQubeEnv('SonarQube-Server') {
                     sh 'sonar-scanner'
                 }
             }
