@@ -3,9 +3,21 @@ pipeline {
 
     stages {
 
-        stage('Install dependencies') {
-            steps {
-                sh 'pip install -r requirements.txt'
+        stage('Setup Python env') {
+        steps {
+            sh '''
+                # Create a virtual environment inside the workspace
+                python3 -m venv venv
+
+                # Activate the virtual environment
+                . venv/bin/activate
+
+                # Upgrade pip inside the venv
+                pip install --upgrade pip
+
+                # Install dependencies
+                pip install -r requirements.txt
+            '''
             }
         }
 
