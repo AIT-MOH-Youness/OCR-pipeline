@@ -24,6 +24,7 @@ pipeline {
         stage('Run tests') {
             steps {
                 sh '''
+                    pwd
                     # Activate the virtual environment
                     . venv/bin/activate
                     # Now pytest is available
