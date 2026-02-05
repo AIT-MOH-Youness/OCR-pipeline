@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 from io import BytesIO
 from PIL import Image
+from unittest.mock import patch
 
 client = TestClient(app)
 
@@ -52,12 +53,14 @@ def test_ocr_endpoint_with_valid_image():
     img.save(img_bytes, format='PNG')
     img_bytes.seek(0)
     
-    response = client.post(
-        "/ocr",
-        files={"file": ("test.png", img_bytes, "image/png")}
-    )
-    assert response.status_code == 200
-    assert "extracted_text" in response.json()
+    # Mock the OCR function to avoid Tesseract dependency
+    with patch('app.ocr.run_ocr', return_value="Sample extracted text"):
+        response = client.post(
+            "/ocr",
+            files={"file": ("test.png", img_bytes, "image/png")}
+        )
+        assert response.status_code == 200
+        assert "extracted_text" in response.json()
 
 
 def test_ocr_endpoint_missing_file():
@@ -83,12 +86,14 @@ def test_ocr_endpoint_with_jpg_image():
     img.save(img_bytes, format='JPEG')
     img_bytes.seek(0)
     
-    response = client.post(
-        "/ocr",
-        files={"file": ("test.jpg", img_bytes, "image/jpeg")}
-    )
-    assert response.status_code == 200
-    assert "extracted_text" in response.json()
+    # Mock the OCR function to avoid Tesseract dependency
+    with patch('app.ocr.run_ocr', return_value="Sample extracted text from JPEG"):
+        response = client.post(
+            "/ocr",
+            files={"file": ("test.jpg", img_bytes, "image/jpeg")}
+        )
+        assert response.status_code == 200
+        assert "extracted_text" in response.json()
 
 
 def test_ocr_endpoint_response_structure():
@@ -97,13 +102,15 @@ def test_ocr_endpoint_response_structure():
     img.save(img_bytes, format='PNG')
     img_bytes.seek(0)
     
-    response = client.post(
-        "/ocr",
-        files={"file": ("test.png", img_bytes, "image/png")}
-    )
-    assert response.status_code == 200
-    data = response.json()
-    assert isinstance(data, dict)
-    assert "extracted_text" in data
-    assert isinstance(data["extracted_text"], str)
+    # Mock the OCR function to avoid Tesseract dependency
+    with patch('app.ocr.run_ocr', return_value="Mocked text"):
+        response = client.post(
+            "/ocr",
+            files={"file": ("test.png", img_bytes, "image/png")}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, dict)
+        assert "extracted_text" in data
+        assert isinstance(data["extracted_text"], str)
 
