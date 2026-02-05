@@ -8,7 +8,7 @@ app = FastAPI()
 
 @app.get("/")
 def health():
-    return {"status": "ok"}
+    return {"status": "okey"}
 
 @app.post("/ocr")
 async def ocr_endpoint(file: UploadFile = File(...)):
