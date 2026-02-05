@@ -1,5 +1,5 @@
-from fastapi import FastAPI, UploadFile, File
-from PIL import Image
+from fastapi import FastAPI, UploadFile, File, HTTPException
+from PIL import Image, UnidentifiedImageError
 import pytesseract
 import io
 from app.ocr import run_ocr 
@@ -12,6 +12,11 @@ def health():
 
 @app.post("/ocr")
 async def ocr_endpoint(file: UploadFile = File(...)):
-    contents = await file.read()
-    text = run_ocr(contents)
-    return {"extracted_text": text}
+    try:
+        contents = await file.read()
+        text = run_ocr(contents)
+        return {"extracted_text": text}
+    except UnidentifiedImageError:
+        raise HTTPException(status_code=400, detail="Invalid image file")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
