@@ -54,7 +54,7 @@ def test_ocr_endpoint_with_valid_image():
     img_bytes.seek(0)
     
     # Mock the OCR function to avoid Tesseract dependency
-    with patch('app.ocr.run_ocr', return_value="Sample extracted text"):
+    with patch('app.main.run_ocr', return_value="Sample extracted text"):
         response = client.post(
             "/ocr",
             files={"file": ("test.png", img_bytes, "image/png")}
@@ -87,7 +87,7 @@ def test_ocr_endpoint_with_jpg_image():
     img_bytes.seek(0)
     
     # Mock the OCR function to avoid Tesseract dependency
-    with patch('app.ocr.run_ocr', return_value="Sample extracted text from JPEG"):
+    with patch('app.main.run_ocr', return_value="Sample extracted text from JPEG"):
         response = client.post(
             "/ocr",
             files={"file": ("test.jpg", img_bytes, "image/jpeg")}
@@ -103,7 +103,7 @@ def test_ocr_endpoint_response_structure():
     img_bytes.seek(0)
     
     # Mock the OCR function to avoid Tesseract dependency
-    with patch('app.ocr.run_ocr', return_value="Mocked text"):
+    with patch('app.main.run_ocr', return_value="Mocked text"):
         response = client.post(
             "/ocr",
             files={"file": ("test.png", img_bytes, "image/png")}
