@@ -10,6 +10,20 @@ app = FastAPI()
 def health():
     return {"status": "okey"}
 
+@app.get("/doc")
+def documentation():
+    return {
+        "app_name": "OCR API",
+        "description": "This application provides Optical Character Recognition (OCR) functionality through a REST API. Upload an image file and extract text content from it using Tesseract OCR engine.",
+        "endpoints": {
+            "/": "Health check endpoint - returns API status",
+            "/doc": "API documentation - describes the application and available endpoints",
+            "/ocr": "OCR endpoint - accepts image file upload (POST) and returns extracted text"
+        },
+        "supported_formats": ["PNG", "JPEG", "JPG", "BMP", "GIF", "TIFF"],
+        "usage": "Send a POST request to /ocr with an image file in the 'file' field to extract text from the image"
+    }
+
 @app.post("/ocr")
 async def ocr_endpoint(file: UploadFile = File(...)):
     try:

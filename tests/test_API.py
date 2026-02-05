@@ -16,6 +16,35 @@ def test_health_response_content():
     assert response.json() == {"status": "okey"}
 
 
+def test_doc_endpoint():
+    response = client.get("/doc")
+    assert response.status_code == 200
+
+
+def test_doc_response_structure():
+    response = client.get("/doc")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, dict)
+    assert "app_name" in data
+    assert "description" in data
+    assert "endpoints" in data
+    assert "supported_formats" in data
+    assert "usage" in data
+
+
+def test_doc_response_content():
+    response = client.get("/doc")
+    data = response.json()
+    assert data["app_name"] == "OCR API"
+    assert isinstance(data["endpoints"], dict)
+    assert "/" in data["endpoints"]
+    assert "/doc" in data["endpoints"]
+    assert "/ocr" in data["endpoints"]
+    assert isinstance(data["supported_formats"], list)
+    assert len(data["supported_formats"]) > 0
+
+
 def test_ocr_endpoint_with_valid_image():
     # Create a simple test image
     img = Image.new('RGB', (200, 100), color='white')
