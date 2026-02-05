@@ -1,5 +1,7 @@
 pipeline {
-    agent any
+    agent {
+        label 'ocr-agent' 
+    }
     
     environment {
         IMAGE_NAME = 'ocr-api'
