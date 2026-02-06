@@ -114,3 +114,29 @@ def test_ocr_endpoint_response_structure():
         assert "extracted_text" in data
         assert isinstance(data["extracted_text"], str)
 
+
+def test_ocr_real_text_output():
+    expected_text = (
+        "Un texte est une série orale ou écrite de mots pergus comme constituant un ensemble cohérent, "
+        "porteur de sens et utilisant les\nstructures propres a une langue (conjugaisons, construction "
+        "et association des phrases. ). Un texte n'a pas de longueur déterminée\nsauf dans le cas de "
+        "poémes a forme fixe comme le sonnet ou le haiku.\n"
+    )
+    
+    # Use the actual test image
+    import os
+    test_image_path = os.path.join(os.path.dirname(__file__), "test_images", "image.png")
+    
+    with open(test_image_path, "rb") as img_file:
+        img_bytes = img_file.read()
+    
+    response = client.post(
+        "/ocr",
+        files={"file": ("image.png", BytesIO(img_bytes), "image/png")}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    # Verify the extracted text matches the expected text
+    assert data["extracted_text"] == expected_text
+
+
