@@ -291,301 +291,55 @@
       </div>
     </header>
 
-    <div class="controls card hidePrint">
-      <div class="left">
-        <button class="btn active" data-sev="ALL">Tout</button>
-        <button class="btn" data-sev="CRITICAL"><span class="dot critical"></span>Critical</button>
-        <button class="btn" data-sev="HIGH"><span class="dot high"></span>High</button>
-        <button class="btn" data-sev="MEDIUM"><span class="dot medium"></span>Medium</button>
-        <button class="btn" data-sev="LOW"><span class="dot low"></span>Low</button>
+        {{- range . }}
+        <div class="target-card">
+            <div class="target-header">
+                <i class="fa-solid fa-box-open"></i>
+                <span class="target-title">{{ .Target }}</span>
+                <span style="font-size: 12px; color: #94a3b8;">({{ .Type }})</span>
+            </div>
 
-        <div class="search">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M21 21l-4.3-4.3" stroke-width="2" stroke-linecap="round"/>
-            <path d="M10.8 18.2a7.4 7.4 0 1 1 0-14.8a7.4 7.4 0 0 1 0 14.8z" stroke-width="2"/>
-          </svg>
-          <input id="q" type="search" placeholder="Rechercher: CVE, package, version, fix…" autocomplete="off">
-        </div>
-      </div>
-
-      <div class="right">
-        <button class="btn" id="expandAll">Tout replier</button>
-      </div>
-    </div>
-
-    <section class="summary card">
-      <div class="metric total">
-        <div class="label">Total vulnérabilités</div>
-        <div class="value" id="mTotal2">0</div>
-      </div>
-      <div class="metric critical">
-        <div class="label">Critical</div>
-        <div class="value" id="mCritical">0</div>
-      </div>
-      <div class="metric high">
-        <div class="label">High</div>
-        <div class="value" id="mHigh">0</div>
-      </div>
-      <div class="metric medium">
-        <div class="label">Medium</div>
-        <div class="value" id="mMedium">0</div>
-      </div>
-      <div class="metric low">
-        <div class="label">Low</div>
-        <div class="value" id="mLow">0</div>
-      </div>
-      <div class="metric">
-        <div class="label">Filtre / Recherche</div>
-        <div class="value" id="mVisible">0</div>
-      </div>
-    </section>
-
-    {{- range $ti, $t := . }}
-    <section class="target card" data-target>
-      <div class="targetHead">
-        <div class="targetLeft">
-          <div style="width:10px;height:10px;border-radius:999px;background:rgba(37,99,235,.25)"></div>
-          <div style="min-width:0">
-            <div class="targetTitle">{{ $t.Target }}</div>
-            <div class="targetMeta">{{ $t.Type }}</div>
-          </div>
-        </div>
-
-        <div class="targetActions">
-          <span class="chip"><span class="dot critical"></span><b data-chip="CRITICAL">0</b> Critical</span>
-          <span class="chip"><span class="dot high"></span><b data-chip="HIGH">0</b> High</span>
-          <span class="chip"><span class="dot medium"></span><b data-chip="MEDIUM">0</b> Medium</span>
-          <span class="chip"><span class="dot low"></span><b data-chip="LOW">0</b> Low</span>
-          <span class="chip"><b data-chip="TOTAL">0</b> Total</span>
-          <button class="toggle hidePrint" data-toggle>Replier</button>
-        </div>
-      </div>
-
-      {{- if not $t.Vulnerabilities }}
-      <div class="noVuln">
-        <div class="ok">✓</div>
-        <div>OK — aucune vulnérabilité détectée.</div>
-      </div>
-      {{- else }}
-      <div class="tableWrap" data-wrap>
-        <table data-table>
-          <thead>
-            <tr>
-              <th data-sort="Severity">Sévérité <span class="sort">↕</span></th>
-              <th data-sort="VulnerabilityID">ID <span class="sort">↕</span></th>
-              <th data-sort="PkgName">Paquet <span class="sort">↕</span></th>
-              <th data-sort="InstalledVersion">Installée <span class="sort">↕</span></th>
-              <th data-sort="FixedVersion">Correctif <span class="sort">↕</span></th>
-            </tr>
-          </thead>
-          <tbody>
-            {{- range $vi, $v := $t.Vulnerabilities }}
-            <tr class="click" data-row
-                data-severity="{{ $v.Severity }}"
-                data-search="{{ $v.VulnerabilityID }} {{ $v.PkgName }} {{ $v.InstalledVersion }} {{ $v.FixedVersion }}">
-              <td><span class="badge badge-{{ $v.Severity }}">{{ $v.Severity }}</span></td>
-              <td>
-                {{- if $v.PrimaryURL -}}
-                  <a class="cve" href="{{ $v.PrimaryURL }}" target="_blank" rel="noreferrer">{{ $v.VulnerabilityID }}</a>
-                {{- else -}}
-                  <span class="cve">{{ $v.VulnerabilityID }}</span>
-                {{- end -}}
-              </td>
-              <td><strong>{{ $v.PkgName }}</strong></td>
-              <td><code>{{ $v.InstalledVersion }}</code></td>
-              <td>
-                {{- if $v.FixedVersion -}}
-                  <span style="color:var(--low);font-weight:800">{{ $v.FixedVersion }}</span>
-                {{- else -}}
-                  <span style="color:var(--muted);font-style:italic">Non disponible</span>
-                {{- end -}}
-              </td>
-            </tr>
+            {{- if not .Vulnerabilities }}
+            <div class="no-vuln">
+                <i class="fa-solid fa-circle-check" style="color: var(--low);"></i>
+                Félicitations ! Aucune vulnérabilité détectée.
+            </div>
+            {{- else }}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sévérité</th>
+                        <th>ID Vulnérabilité</th>
+                        <th>Paquet / Librairie</th>
+                        <th>Installée</th>
+                        <th>Correctif</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{- range .Vulnerabilities }}
+                    <tr>
+                        <td>
+                            <span class="badge badge-{{ .Severity }}">
+                                <i class="fa-solid fa-triangle-exclamation"></i> {{ .Severity }}
+                            </span>
+                        </td>
+                        <td><a class="vuln-id" href="{{ .PrimaryURL }}" target="_blank">{{ .VulnerabilityID }}</a></td>
+                        <td><strong>{{ .PkgName }}</strong></td>
+                        <td><code>{{ .InstalledVersion }}</code></td>
+                        <td>
+                            {{- if .FixedVersion }}
+                            <span style="color: var(--low); font-weight: 600;">{{ .FixedVersion }}</span>
+                            {{- else }}
+                            <span style="color: #94a3b8; font-style: italic;">Non disponible</span>
+                            {{- end }}
+                        </td>
+                    </tr>
+                    {{- end }}
+                </tbody>
+            </table>
             {{- end }}
-          </tbody>
-        </table>
-      </div>
-      {{- end }}
-    </section>
-    {{- end }}
-
-    <div class="footer card">
-      <span>Tri: clique sur les en-têtes · Filtre: boutons sévérité · Recherche instantanée</span>
-      <span class="hidePrint">Astuce: <b>/</b> focus recherche · <b>Esc</b> reset</span>
+        </div>
+        {{- end }}
     </div>
-  </div>
-
-  <script>
-    (function(){
-      const severityOrder = { CRITICAL:4, HIGH:3, MEDIUM:2, LOW:1, UNKNOWN:0 };
-      const btns = [...document.querySelectorAll('.btn[data-sev]')];
-      const q = document.getElementById('q');
-      const rows = [...document.querySelectorAll('tr[data-row]')];
-      const targets = [...document.querySelectorAll('[data-target]')];
-      const expandAll = document.getElementById('expandAll');
-
-      let active = 'ALL';
-      let allExpanded = true;
-
-      function setText(id, v){ const el=document.getElementById(id); if(el) el.textContent = String(v); }
-
-      // Open CVE on row click (if link exists)
-      rows.forEach(r=>{
-        r.addEventListener('click', ()=>{
-          const a = r.querySelector('a.cve');
-          if(a) window.open(a.href, '_blank', 'noopener,noreferrer');
-        });
-      });
-
-      // Sort tables
-      document.querySelectorAll('table[data-table]').forEach(table=>{
-        const tbody = table.querySelector('tbody');
-        const ths = [...table.querySelectorAll('th[data-sort]')];
-        let key=null, dir=1;
-
-        function getVal(tr, k){
-          const tds = tr.querySelectorAll('td');
-          if(k==='Severity') return tr.getAttribute('data-severity') || '';
-          if(k==='VulnerabilityID') return (tds[1]?.innerText||'').trim();
-          if(k==='PkgName') return (tds[2]?.innerText||'').trim();
-          if(k==='InstalledVersion') return (tds[3]?.innerText||'').trim();
-          if(k==='FixedVersion') return (tds[4]?.innerText||'').trim();
-          return '';
-        }
-
-        ths.forEach(th=>{
-          th.addEventListener('click', ()=>{
-            const k = th.getAttribute('data-sort');
-            if(key===k) dir*=-1; else { key=k; dir=1; }
-
-            const rs = [...tbody.querySelectorAll('tr[data-row]')];
-            rs.sort((a,b)=>{
-              const av = getVal(a,k), bv = getVal(b,k);
-              if(k==='Severity') return (severityOrder[av]-severityOrder[bv]) * dir;
-              return String(av).localeCompare(String(bv), 'fr', {numeric:true, sensitivity:'base'}) * dir;
-            });
-            rs.forEach(r=>tbody.appendChild(r));
-            updateMetrics();
-          });
-        });
-      });
-
-      // Target collapse buttons
-      document.querySelectorAll('[data-toggle]').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
-          const card = btn.closest('[data-target]');
-          const wrap = card.querySelector('[data-wrap]');
-          if(!wrap) return;
-          const hidden = wrap.style.display === 'none';
-          wrap.style.display = hidden ? '' : 'none';
-          btn.textContent = hidden ? 'Replier' : 'Déplier';
-        });
-      });
-
-      // Expand all
-      if(expandAll){
-        expandAll.addEventListener('click', ()=>{
-          allExpanded = !allExpanded;
-          document.querySelectorAll('[data-wrap]').forEach(w=> w.style.display = allExpanded ? '' : 'none');
-          document.querySelectorAll('[data-toggle]').forEach(b=> b.textContent = allExpanded ? 'Replier' : 'Déplier');
-          expandAll.textContent = allExpanded ? 'Tout replier' : 'Tout déplier';
-        });
-      }
-
-      // Filtering & search
-      function apply(){
-        const term = (q.value||'').toLowerCase().trim();
-
-        rows.forEach(r=>{
-          const sev = r.getAttribute('data-severity') || '';
-          const hay = (r.getAttribute('data-search')||'').toLowerCase();
-          const okSev = (active==='ALL') || (sev===active);
-          const okQ = !term || hay.includes(term);
-          r.style.display = (okSev && okQ) ? '' : 'none';
-        });
-
-        // Hide targets with no visible rows (but keep no-vuln cards)
-        targets.forEach(t=>{
-          const tRows = [...t.querySelectorAll('tr[data-row]')];
-          if(!tRows.length){ t.style.display=''; return; }
-          t.style.display = tRows.some(r=>r.style.display!=='none') ? '' : 'none';
-        });
-
-        updateMetrics();
-      }
-
-      btns.forEach(b=>{
-        b.addEventListener('click', ()=>{
-          btns.forEach(x=>x.classList.remove('active'));
-          b.classList.add('active');
-          active = b.getAttribute('data-sev');
-          apply();
-        });
-      });
-
-      q.addEventListener('input', apply);
-
-      // Keyboard shortcuts
-      document.addEventListener('keydown', (e)=>{
-        if(e.key==='/' && document.activeElement!==q){
-          e.preventDefault(); q.focus();
-        }
-        if(e.key==='Escape'){
-          q.value='';
-          active='ALL';
-          btns.forEach(x=>x.classList.remove('active'));
-          (btns.find(x=>x.getAttribute('data-sev')==='ALL')||btns[0])?.classList.add('active');
-          apply();
-        }
-      });
-
-      // Metrics (global + per-target chips)
-      function updateMetrics(){
-        let total=0,c=0,h=0,m=0,l=0,visible=0;
-
-        const visibleRows = rows.filter(r=>r.style.display!=='none');
-        visible = visibleRows.length;
-
-        // total across all (unfiltered) for header
-        rows.forEach(r=>{
-          total++;
-          const s=r.getAttribute('data-severity');
-          if(s==='CRITICAL') c++;
-          else if(s==='HIGH') h++;
-          else if(s==='MEDIUM') m++;
-          else if(s==='LOW') l++;
-        });
-
-        setText('mTotal', total);
-        setText('mTotal2', total);
-        setText('mCritical', c);
-        setText('mHigh', h);
-        setText('mMedium', m);
-        setText('mLow', l);
-
-        const visibleTargets = targets.filter(t=>t.style.display!=='none').length;
-        setText('mTargets', visibleTargets);
-        setText('mVisible', visible);
-
-        // per-target chips (based on visible rows, so chips follow filters/search)
-        targets.forEach(t=>{
-          const tRows = [...t.querySelectorAll('tr[data-row]')].filter(r=>r.style.display!=='none');
-          const counts={CRITICAL:0,HIGH:0,MEDIUM:0,LOW:0,TOTAL:0};
-          tRows.forEach(r=>{
-            counts.TOTAL++;
-            const s=r.getAttribute('data-severity');
-            if(counts[s]!=null) counts[s]++;
-          });
-          t.querySelectorAll('[data-chip]').forEach(el=>{
-            const k=el.getAttribute('data-chip');
-            el.textContent = counts[k] ?? 0;
-          });
-        });
-      }
-
-      // init
-      apply();
-    })();
-  </script>
 </body>
 </html>
