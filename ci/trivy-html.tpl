@@ -285,9 +285,7 @@
       </div>
 
       <div class="rightWrap">
-        <span class="tag"><b id="mTargets">0</b>&nbsp;Cibles</span>
-        <span class="tag"><b id="mTotal">0</b>&nbsp;Vulnérabilités</span>
-        <button class="btn hidePrint" onclick="window.print()">Imprimer</button>
+        <br />
       </div>
     </header>
 
@@ -297,6 +295,12 @@
                 <i class="fa-solid fa-box-open"></i>
                 <span class="target-title">{{ .Target }}</span>
                 <span style="font-size: 12px; color: #94a3b8;">({{ .Type }})</span>
+            </div>
+
+            <div class="target-header">
+              <br />
+              <br />
+              <br />
             </div>
 
             {{- if not .Vulnerabilities }}
