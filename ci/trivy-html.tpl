@@ -279,7 +279,7 @@
           </svg>
         </div>
         <div class="titleWrap">
-          <h1>Rapport de Sécurité – Trivy (Image Docker)</h1>
+          <h1>Rapport de Sécurité – Trivy</h1>
           <div class="ts">Généré le : {{ now | date "02/01/2006 à 15:04" }}</div>
         </div>
       </div>
@@ -292,14 +292,14 @@
         {{- range . }}
         <div class="target-card">
             <div class="target-header">
+              <br />
+              <br />
                 <i class="fa-solid fa-box-open"></i>
                 <span class="target-title">{{ .Target }}</span>
                 <span style="font-size: 12px; color: #94a3b8;">({{ .Type }})</span>
             </div>
 
             <div class="target-header">
-              <br />
-              <br />
               <br />
             </div>
 
