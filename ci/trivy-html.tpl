@@ -1,304 +1,266 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Dashboard Sécurité - Trivy</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Rapport Sécurité - Trivy</title>
 
   <style>
     :root{
-      --critical:#dc2626;
-      --high:#ea580c;
-      --medium:#ca8a04;
-      --low:#16a34a;
+      --critical:#b91c1c;
+      --high:#c2410c;
+      --medium:#a16207;
+      --low:#15803d;
 
-      --bg0:#0b1220;
-      --bg1:#0f172a;
-      --card:rgba(255,255,255,.06);
-      --card2:rgba(255,255,255,.08);
-      --border:rgba(148,163,184,.20);
-      --text:#e5e7eb;
-      --muted:#94a3b8;
-      --accent:#60a5fa;
-      --shadow: 0 20px 40px rgba(0,0,0,.35);
-      --radius:16px;
-      --radius-sm:12px;
+      --bg:#f6f8fc;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --border:#e2e8f0;
+
+      --shadow: 0 10px 25px rgba(2,8,23,.08);
+      --radius: 14px;
+      --radius-sm: 10px;
+      --accent:#2563eb;
+      --accent2:#7c3aed;
     }
 
     *{box-sizing:border-box}
-    html,body{height:100%}
     body{
-      font-family:'Inter',sans-serif;
       margin:0;
       background:
-        radial-gradient(900px 500px at 20% -10%, rgba(96,165,250,.25), transparent 60%),
-        radial-gradient(700px 450px at 90% 10%, rgba(34,197,94,.14), transparent 55%),
-        radial-gradient(900px 600px at 50% 110%, rgba(234,88,12,.14), transparent 55%),
-        linear-gradient(180deg, var(--bg0), var(--bg1));
+        radial-gradient(900px 400px at 10% -10%, rgba(37,99,235,.15), transparent 60%),
+        radial-gradient(800px 380px at 90% -10%, rgba(124,58,237,.12), transparent 55%),
+        var(--bg);
       color:var(--text);
-      padding:28px 18px 50px;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      padding: 28px 18px 60px;
     }
-    a{color:inherit}
-    .container{max-width:1200px;margin:0 auto}
-    .glass{
-      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+
+    .container{max-width:1180px;margin:0 auto}
+    .card{
+      background:var(--card);
       border:1px solid var(--border);
       border-radius:var(--radius);
       box-shadow:var(--shadow);
-      backdrop-filter: blur(10px);
     }
 
     /* Header */
     header{
-      display:flex; align-items:center; justify-content:space-between;
-      gap:16px; padding:18px 18px 16px;
-      position:sticky; top:10px; z-index:10;
+      padding:18px 18px 16px;
+      display:flex; align-items:center; justify-content:space-between; gap:16px;
+      position:sticky; top:10px; z-index:5;
     }
-    .brand{
-      display:flex; align-items:center; gap:12px;
-      min-width: 0;
-    }
-    .brand .icon{
+    .brand{display:flex; align-items:center; gap:12px; min-width:0;}
+    .logoMark{
       width:44px;height:44px;border-radius:14px;
-      display:grid;place-items:center;
-      background:linear-gradient(135deg, rgba(96,165,250,.25), rgba(255,255,255,.06));
+      background:linear-gradient(135deg, rgba(37,99,235,.15), rgba(124,58,237,.12));
       border:1px solid var(--border);
+      display:grid;place-items:center;
     }
-    .brand h1{
-      margin:0; font-size:16px; font-weight:800; letter-spacing:.2px;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    .titleWrap{min-width:0}
+    h1{margin:0;font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ts{margin-top:2px;font-size:12px;color:var(--muted)}
+    .rightWrap{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .tag{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 10px;border-radius:999px;
+      border:1px solid var(--border);
+      background:#fff;
+      font-size:12px;color:var(--muted)
     }
-    .timestamp{font-size:12px;color:var(--muted);margin-top:2px}
-    .logo{
-      display:flex;align-items:center;gap:10px;
-      opacity:.95;
-    }
-    .logo img{height:34px; filter: drop-shadow(0 6px 14px rgba(0,0,0,.25));}
 
     /* Controls */
     .controls{
       margin-top:14px;
-      padding:14px 16px;
-      display:flex; flex-wrap:wrap; gap:10px;
+      padding:12px 14px;
+      display:flex; gap:10px; flex-wrap:wrap;
       align-items:center; justify-content:space-between;
     }
-    .controls-left,.controls-right{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:10px 12px;
-      border-radius:999px;
-      border:1px solid var(--border);
-      background:rgba(255,255,255,.04);
-      color:var(--muted);
-      font-size:12px;
-    }
-    .pill strong{color:var(--text)}
+    .left, .right{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
     .btn{
-      cursor:pointer;
       border:1px solid var(--border);
-      background:rgba(255,255,255,.04);
-      color:var(--text);
+      background:#fff;
       padding:10px 12px;
       border-radius:999px;
       font-size:12px;
-      display:inline-flex; align-items:center; gap:8px;
-      transition:.15s ease;
-    }
-    .btn:hover{transform:translateY(-1px); background:rgba(255,255,255,.07)}
-    .btn.active{
-      border-color:rgba(96,165,250,.55);
-      box-shadow:0 0 0 4px rgba(96,165,250,.12);
-    }
-    .search{
-      position:relative;
-    }
-    .search input{
-      width:min(360px, 74vw);
-      padding:10px 12px 10px 36px;
-      border-radius:999px;
-      border:1px solid var(--border);
-      outline:none;
-      background:rgba(0,0,0,.12);
       color:var(--text);
-      font-size:12px;
-    }
-    .search i{
-      position:absolute; left:12px; top:50%; transform:translateY(-50%);
-      color:var(--muted); font-size:13px;
-    }
-    .hint{
-      color:var(--muted); font-size:12px; display:flex; gap:8px; align-items:center;
-    }
-    kbd{
-      font-family:inherit;
-      border:1px solid var(--border);
-      background:rgba(255,255,255,.04);
-      border-bottom-color:rgba(255,255,255,.12);
-      border-radius:8px;
-      padding:2px 6px;
-      font-size:11px;
-      color:var(--text);
-    }
-
-    /* Summary grid */
-    .summary{
-      margin-top:14px;
-      padding:14px 16px;
-      display:grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-      gap:10px;
-    }
-    .metric{
-      padding:12px 12px;
-      border-radius:14px;
-      border:1px solid var(--border);
-      background:rgba(255,255,255,.04);
-      min-height:72px;
-    }
-    .metric .label{font-size:11px;color:var(--muted);display:flex;gap:8px;align-items:center}
-    .metric .value{margin-top:6px;font-size:18px;font-weight:800;letter-spacing:.2px}
-    .metric.critical .value{color:var(--critical)}
-    .metric.high .value{color:var(--high)}
-    .metric.medium .value{color:var(--medium)}
-    .metric.low .value{color:var(--low)}
-    .metric.total .value{color:var(--accent)}
-    @media (max-width: 960px){
-      .summary{grid-template-columns: repeat(3, minmax(0,1fr));}
-    }
-    @media (max-width: 520px){
-      .summary{grid-template-columns: repeat(2, minmax(0,1fr));}
-    }
-
-    /* Target cards */
-    .target-card{ margin-top:16px; overflow:hidden; }
-    .target-header{
-      padding:14px 16px;
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-      border-bottom:1px solid var(--border);
-      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-    }
-    .target-left{display:flex;align-items:center;gap:10px; min-width:0;}
-    .target-title{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .target-meta{color:var(--muted);font-size:12px}
-    .chips{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
-    .chip{
+      cursor:pointer;
       display:inline-flex;align-items:center;gap:8px;
-      padding:8px 10px;
-      border-radius:999px;
-      background:rgba(255,255,255,.04);
-      border:1px solid var(--border);
-      font-size:12px;
-      color:var(--muted);
+      transition:.12s ease;
       user-select:none;
     }
-    .chip b{color:var(--text)}
-    .chip .dot{width:8px;height:8px;border-radius:99px;display:inline-block}
+    .btn:hover{transform:translateY(-1px)}
+    .btn.active{border-color:rgba(37,99,235,.45); box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+    .dot{width:10px;height:10px;border-radius:999px;display:inline-block}
     .dot.critical{background:var(--critical)}
     .dot.high{background:var(--high)}
     .dot.medium{background:var(--medium)}
     .dot.low{background:var(--low)}
 
-    .no-vuln{
-      padding:26px 16px;
-      display:flex;align-items:center;justify-content:center;gap:10px;
-      color:var(--muted);
+    .search{
+      position:relative;
     }
-    .no-vuln i{color:var(--low); font-size:18px}
+    .search input{
+      width:min(360px, 82vw);
+      padding:10px 12px 10px 36px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      outline:none;
+      background:#fff;
+      font-size:12px;
+    }
+    .search svg{
+      position:absolute; left:12px; top:50%;
+      transform:translateY(-50%);
+      width:14px;height:14px;
+      stroke:var(--muted);
+    }
+
+    /* Summary */
+    .summary{
+      margin-top:14px;
+      padding:14px;
+      display:grid;
+      grid-template-columns: repeat(6, minmax(0,1fr));
+      gap:10px;
+    }
+    .metric{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px 12px;
+      background:linear-gradient(180deg, #fff, #fbfdff);
+      min-height:74px;
+    }
+    .metric .label{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px}
+    .metric .value{margin-top:6px;font-size:20px;font-weight:900;letter-spacing:.2px}
+    .metric.total .value{color:var(--accent)}
+    .metric.critical .value{color:var(--critical)}
+    .metric.high .value{color:var(--high)}
+    .metric.medium .value{color:var(--medium)}
+    .metric.low .value{color:var(--low)}
+    @media (max-width: 980px){ .summary{grid-template-columns: repeat(3, minmax(0,1fr));} }
+    @media (max-width: 520px){ .summary{grid-template-columns: repeat(2, minmax(0,1fr));} }
+
+    /* Target */
+    .target{margin-top:16px; overflow:hidden;}
+    .targetHead{
+      padding:14px 16px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      border-bottom:1px solid var(--border);
+      background:linear-gradient(90deg, rgba(37,99,235,.06), rgba(124,58,237,.05));
+    }
+    .targetLeft{display:flex;align-items:center;gap:10px; min-width:0}
+    .targetTitle{font-weight:800;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .targetMeta{font-size:12px;color:var(--muted)}
+    .targetActions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+
+    .chip{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 10px;border-radius:999px;
+      border:1px solid var(--border);
+      background:#fff;
+      font-size:12px;color:var(--muted);
+      user-select:none;
+    }
+    .chip b{color:var(--text)}
+
+    .toggle{
+      border:1px solid var(--border);
+      background:#fff;
+      padding:8px 10px;
+      border-radius:999px;
+      font-size:12px;
+      cursor:pointer;
+      display:inline-flex;align-items:center;gap:8px;
+    }
 
     /* Table */
-    .table-wrap{width:100%; overflow:auto;}
-    table{width:100%; border-collapse:separate; border-spacing:0}
+    .tableWrap{width:100%; overflow:auto;}
+    table{width:100%; border-collapse:separate; border-spacing:0;}
     thead th{
       position:sticky; top:0;
-      background:rgba(3,7,18,.55);
-      backdrop-filter: blur(8px);
+      background:#f8fafc;
       border-bottom:1px solid var(--border);
-      text-align:left;
       padding:12px 14px;
       font-size:11px;
       letter-spacing:.08em;
       text-transform:uppercase;
       color:var(--muted);
+      white-space:nowrap;
       cursor:pointer;
       user-select:none;
-      white-space:nowrap;
     }
-    thead th .sort{
-      margin-left:8px; opacity:.6; font-size:11px;
-    }
+    thead th .sort{margin-left:8px;opacity:.7}
     tbody td{
       padding:12px 14px;
-      border-bottom:1px solid rgba(148,163,184,.14);
+      border-bottom:1px solid #f1f5f9;
       font-size:13px;
-      vertical-align:middle;
       white-space:nowrap;
+      vertical-align:middle;
     }
-    tbody tr{
-      transition:.12s ease;
-      background:transparent;
-    }
-    tbody tr:hover{
-      background:rgba(255,255,255,.04);
-    }
-    tbody tr.clickable{cursor:pointer}
+    tbody tr:hover{background:#f8fafc}
+    tbody tr.click{cursor:pointer}
+
     code{
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      padding:3px 6px;
-      border-radius:8px;
-      border:1px solid rgba(148,163,184,.18);
-      background:rgba(0,0,0,.20);
-      color:rgba(226,232,240,.95);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      padding:3px 6px;border-radius:8px;
+      border:1px solid #e5e7eb;
+      background:#f8fafc;
       font-size:12px;
     }
 
-    /* Badges */
     .badge{
       display:inline-flex;align-items:center;gap:8px;
       padding:6px 10px;
       border-radius:999px;
       font-size:11px;
-      font-weight:800;
+      font-weight:900;
       letter-spacing:.04em;
       text-transform:uppercase;
-      border:1px solid rgba(255,255,255,.10);
+      border:1px solid var(--border);
+      background:#fff;
     }
-    .badge i{font-size:12px}
-    .badge-CRITICAL{background:rgba(220,38,38,.15); color:#fecaca; border-color:rgba(220,38,38,.35)}
-    .badge-HIGH{background:rgba(234,88,12,.14); color:#fed7aa; border-color:rgba(234,88,12,.32)}
-    .badge-MEDIUM{background:rgba(202,138,4,.16); color:#fde68a; border-color:rgba(202,138,4,.30)}
-    .badge-LOW{background:rgba(22,163,74,.14); color:#bbf7d0; border-color:rgba(22,163,74,.28)}
+    .badge-CRITICAL{border-color:rgba(185,28,28,.25); color:var(--critical); background:rgba(185,28,28,.06)}
+    .badge-HIGH{border-color:rgba(194,65,12,.25); color:var(--high); background:rgba(194,65,12,.06)}
+    .badge-MEDIUM{border-color:rgba(161,98,7,.25); color:var(--medium); background:rgba(161,98,7,.08)}
+    .badge-LOW{border-color:rgba(21,128,61,.25); color:var(--low); background:rgba(21,128,61,.06)}
 
-    .vuln-id{
-      color:#93c5fd;
+    .cve{
+      color:var(--accent);
+      font-weight:800;
       text-decoration:none;
-      font-weight:700;
     }
-    .vuln-id:hover{text-decoration:underline}
-    .muted{color:var(--muted)}
-    .fix-ok{color:#86efac; font-weight:700}
-    .fix-na{color:var(--muted); font-style:italic}
+    .cve:hover{text-decoration:underline}
 
-    /* Footer note */
+    .noVuln{
+      padding:22px 16px;
+      color:var(--muted);
+      display:flex; align-items:center; gap:10px;
+    }
+    .ok{
+      width:26px;height:26px;border-radius:999px;
+      background:rgba(21,128,61,.12);
+      border:1px solid rgba(21,128,61,.25);
+      display:grid;place-items:center;
+      color:var(--low);
+      font-weight:900;
+    }
+
     .footer{
       margin-top:18px;
+      padding:12px 14px;
       color:var(--muted);
       font-size:12px;
-      display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
-      padding:14px 16px;
+      display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;
     }
 
-    /* Print */
     @media print{
-      body{background:#fff;color:#111827;padding:0}
-      header, .controls, .footer {position:static; box-shadow:none; backdrop-filter:none}
-      .glass{background:#fff; border:1px solid #e5e7eb; box-shadow:none}
-      thead th{background:#f3f4f6;color:#374151}
-      code{background:#f3f4f6;border-color:#e5e7eb;color:#111827}
-      .vuln-id{color:#1d4ed8}
-      .btn,.search,.hint{display:none !important}
+      header{position:static}
+      .controls, .footer .hidePrint{display:none !important}
+      body{background:#fff; padding:0}
+      .card{box-shadow:none}
+      thead th{background:#f3f4f6}
     }
   </style>
 </head>
@@ -306,132 +268,136 @@
 <body>
   <div class="container">
 
-    <header class="glass">
+    <header class="card">
       <div class="brand">
-        <div class="icon"><i class="fa-solid fa-shield-halved"></i></div>
-        <div style="min-width:0">
+        <div class="logoMark" aria-hidden="true">
+          <!-- simple shield icon (inline, no CDN) -->
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2l8 4v6c0 5-3.2 9.4-8 10-4.8-.6-8-5-8-10V6l8-4z"
+                  stroke="#2563eb" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M12 6v14" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" opacity=".65"/>
+          </svg>
+        </div>
+        <div class="titleWrap">
           <h1>Rapport de Sécurité – Trivy (Image Docker)</h1>
-          <div class="timestamp">Généré le : {{ now | date "02/01/2006 à 15:04" }}</div>
+          <div class="ts">Généré le : {{ now | date "02/01/2006 à 15:04" }}</div>
         </div>
       </div>
-      <div class="logo">
-        <img src="https://raw.githubusercontent.com/aquasecurity/trivy/main/docs/images/logo.png" alt="Trivy Logo">
+
+      <div class="rightWrap">
+        <span class="tag"><b id="mTargets">0</b>&nbsp;Cibles</span>
+        <span class="tag"><b id="mTotal">0</b>&nbsp;Vulnérabilités</span>
+        <button class="btn hidePrint" onclick="window.print()">Imprimer</button>
       </div>
     </header>
 
-    <div class="controls glass" role="region" aria-label="Contrôles">
-      <div class="controls-left">
-        <button class="btn active" data-sev="ALL"><i class="fa-solid fa-layer-group"></i> Tout</button>
-        <button class="btn" data-sev="CRITICAL"><span class="dot critical"></span> Critical</button>
-        <button class="btn" data-sev="HIGH"><span class="dot high"></span> High</button>
-        <button class="btn" data-sev="MEDIUM"><span class="dot medium"></span> Medium</button>
-        <button class="btn" data-sev="LOW"><span class="dot low"></span> Low</button>
+    <div class="controls card hidePrint">
+      <div class="left">
+        <button class="btn active" data-sev="ALL">Tout</button>
+        <button class="btn" data-sev="CRITICAL"><span class="dot critical"></span>Critical</button>
+        <button class="btn" data-sev="HIGH"><span class="dot high"></span>High</button>
+        <button class="btn" data-sev="MEDIUM"><span class="dot medium"></span>Medium</button>
+        <button class="btn" data-sev="LOW"><span class="dot low"></span>Low</button>
 
         <div class="search">
-          <i class="fa-solid fa-magnifying-glass"></i>
-          <input id="searchInput" type="search" placeholder="Rechercher: CVE, package, version, fix…" autocomplete="off"/>
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M21 21l-4.3-4.3" stroke-width="2" stroke-linecap="round"/>
+            <path d="M10.8 18.2a7.4 7.4 0 1 1 0-14.8a7.4 7.4 0 0 1 0 14.8z" stroke-width="2"/>
+          </svg>
+          <input id="q" type="search" placeholder="Rechercher: CVE, package, version, fix…" autocomplete="off">
         </div>
       </div>
 
-      <div class="controls-right">
-        <div class="hint"><i class="fa-regular fa-keyboard"></i> <span><kbd>/</kbd> focus recherche · <kbd>Esc</kbd> reset</span></div>
-        <button class="btn" id="btnExpand"><i class="fa-solid fa-up-right-and-down-left-from-center"></i> Tout déplier</button>
-        <button class="btn" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimer</button>
+      <div class="right">
+        <button class="btn" id="expandAll">Tout replier</button>
       </div>
     </div>
 
-    <section class="summary glass" aria-label="Résumé global">
+    <section class="summary card">
       <div class="metric total">
-        <div class="label"><i class="fa-solid fa-bug"></i> Total vulnérabilités</div>
-        <div class="value" id="mTotal">0</div>
+        <div class="label">Total vulnérabilités</div>
+        <div class="value" id="mTotal2">0</div>
       </div>
       <div class="metric critical">
-        <div class="label"><i class="fa-solid fa-triangle-exclamation"></i> Critical</div>
+        <div class="label">Critical</div>
         <div class="value" id="mCritical">0</div>
       </div>
       <div class="metric high">
-        <div class="label"><i class="fa-solid fa-fire"></i> High</div>
+        <div class="label">High</div>
         <div class="value" id="mHigh">0</div>
       </div>
       <div class="metric medium">
-        <div class="label"><i class="fa-solid fa-circle-minus"></i> Medium</div>
+        <div class="label">Medium</div>
         <div class="value" id="mMedium">0</div>
       </div>
       <div class="metric low">
-        <div class="label"><i class="fa-solid fa-leaf"></i> Low</div>
+        <div class="label">Low</div>
         <div class="value" id="mLow">0</div>
       </div>
       <div class="metric">
-        <div class="label"><i class="fa-solid fa-box"></i> Cibles</div>
-        <div class="value" id="mTargets">0</div>
+        <div class="label">Filtre / Recherche</div>
+        <div class="value" id="mVisible">0</div>
       </div>
     </section>
 
     {{- range $ti, $t := . }}
-    <section class="target-card glass" data-target>
-      <div class="target-header">
-        <div class="target-left">
-          <i class="fa-solid fa-box-open"></i>
+    <section class="target card" data-target>
+      <div class="targetHead">
+        <div class="targetLeft">
+          <div style="width:10px;height:10px;border-radius:999px;background:rgba(37,99,235,.25)"></div>
           <div style="min-width:0">
-            <div class="target-title">{{ $t.Target }}</div>
-            <div class="target-meta">{{ $t.Type }}</div>
+            <div class="targetTitle">{{ $t.Target }}</div>
+            <div class="targetMeta">{{ $t.Type }}</div>
           </div>
         </div>
 
-        <div class="chips" aria-label="Statistiques cible">
-          <span class="chip"><span class="dot critical"></span><b data-chip="CRITICAL">0</b><span>Critical</span></span>
-          <span class="chip"><span class="dot high"></span><b data-chip="HIGH">0</b><span>High</span></span>
-          <span class="chip"><span class="dot medium"></span><b data-chip="MEDIUM">0</b><span>Medium</span></span>
-          <span class="chip"><span class="dot low"></span><b data-chip="LOW">0</b><span>Low</span></span>
-          <span class="chip"><i class="fa-solid fa-bug"></i><b data-chip="TOTAL">0</b><span>Total</span></span>
+        <div class="targetActions">
+          <span class="chip"><span class="dot critical"></span><b data-chip="CRITICAL">0</b> Critical</span>
+          <span class="chip"><span class="dot high"></span><b data-chip="HIGH">0</b> High</span>
+          <span class="chip"><span class="dot medium"></span><b data-chip="MEDIUM">0</b> Medium</span>
+          <span class="chip"><span class="dot low"></span><b data-chip="LOW">0</b> Low</span>
+          <span class="chip"><b data-chip="TOTAL">0</b> Total</span>
+          <button class="toggle hidePrint" data-toggle>Replier</button>
         </div>
       </div>
 
       {{- if not $t.Vulnerabilities }}
-      <div class="no-vuln">
-        <i class="fa-solid fa-circle-check"></i>
-        <span>OK — aucune vulnérabilité détectée.</span>
+      <div class="noVuln">
+        <div class="ok">✓</div>
+        <div>OK — aucune vulnérabilité détectée.</div>
       </div>
       {{- else }}
-      <div class="table-wrap">
+      <div class="tableWrap" data-wrap>
         <table data-table>
           <thead>
             <tr>
               <th data-sort="Severity">Sévérité <span class="sort">↕</span></th>
-              <th data-sort="VulnerabilityID">ID Vulnérabilité <span class="sort">↕</span></th>
-              <th data-sort="PkgName">Paquet / Librairie <span class="sort">↕</span></th>
+              <th data-sort="VulnerabilityID">ID <span class="sort">↕</span></th>
+              <th data-sort="PkgName">Paquet <span class="sort">↕</span></th>
               <th data-sort="InstalledVersion">Installée <span class="sort">↕</span></th>
               <th data-sort="FixedVersion">Correctif <span class="sort">↕</span></th>
             </tr>
           </thead>
           <tbody>
             {{- range $vi, $v := $t.Vulnerabilities }}
-            <tr class="clickable" data-row
+            <tr class="click" data-row
                 data-severity="{{ $v.Severity }}"
                 data-search="{{ $v.VulnerabilityID }} {{ $v.PkgName }} {{ $v.InstalledVersion }} {{ $v.FixedVersion }}">
-              <td>
-                <span class="badge badge-{{ $v.Severity }}">
-                  {{- if eq $v.Severity "CRITICAL" -}}<i class="fa-solid fa-triangle-exclamation"></i>{{- end -}}
-                  {{- if eq $v.Severity "HIGH" -}}<i class="fa-solid fa-fire"></i>{{- end -}}
-                  {{- if eq $v.Severity "MEDIUM" -}}<i class="fa-solid fa-circle-minus"></i>{{- end -}}
-                  {{- if eq $v.Severity "LOW" -}}<i class="fa-solid fa-leaf"></i>{{- end -}}
-                  {{ $v.Severity }}
-                </span>
-              </td>
+              <td><span class="badge badge-{{ $v.Severity }}">{{ $v.Severity }}</span></td>
               <td>
                 {{- if $v.PrimaryURL -}}
-                  <a class="vuln-id" href="{{ $v.PrimaryURL }}" target="_blank" rel="noreferrer">{{ $v.VulnerabilityID }}</a>
+                  <a class="cve" href="{{ $v.PrimaryURL }}" target="_blank" rel="noreferrer">{{ $v.VulnerabilityID }}</a>
                 {{- else -}}
-                  <span class="vuln-id">{{ $v.VulnerabilityID }}</span>
+                  <span class="cve">{{ $v.VulnerabilityID }}</span>
                 {{- end -}}
               </td>
               <td><strong>{{ $v.PkgName }}</strong></td>
               <td><code>{{ $v.InstalledVersion }}</code></td>
               <td>
                 {{- if $v.FixedVersion -}}
-                  <span class="fix-ok">{{ $v.FixedVersion }}</span>
+                  <span style="color:var(--low);font-weight:800">{{ $v.FixedVersion }}</span>
                 {{- else -}}
-                  <span class="fix-na">Non disponible</span>
+                  <span style="color:var(--muted);font-style:italic">Non disponible</span>
                 {{- end -}}
               </td>
             </tr>
@@ -443,184 +409,182 @@
     </section>
     {{- end }}
 
-    <div class="footer glass">
-      <span><i class="fa-solid fa-circle-info"></i> Astuce: clique une ligne pour ouvrir la CVE (si URL dispo) · tri en cliquant les en-têtes</span>
-      <span class="muted">Template HTML (Trivy) — style dashboard</span>
+    <div class="footer card">
+      <span>Tri: clique sur les en-têtes · Filtre: boutons sévérité · Recherche instantanée</span>
+      <span class="hidePrint">Astuce: <b>/</b> focus recherche · <b>Esc</b> reset</span>
     </div>
   </div>
 
   <script>
     (function(){
-      const severityOrder = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1, UNKNOWN: 0 };
+      const severityOrder = { CRITICAL:4, HIGH:3, MEDIUM:2, LOW:1, UNKNOWN:0 };
+      const btns = [...document.querySelectorAll('.btn[data-sev]')];
+      const q = document.getElementById('q');
+      const rows = [...document.querySelectorAll('tr[data-row]')];
+      const targets = [...document.querySelectorAll('[data-target]')];
+      const expandAll = document.getElementById('expandAll');
 
-      const btns = Array.from(document.querySelectorAll('.btn[data-sev]'));
-      const searchInput = document.getElementById('searchInput');
-      const btnExpand = document.getElementById('btnExpand');
+      let active = 'ALL';
+      let allExpanded = true;
 
-      const allTargets = Array.from(document.querySelectorAll('[data-target]'));
-      const allRows = Array.from(document.querySelectorAll('tr[data-row]'));
+      function setText(id, v){ const el=document.getElementById(id); if(el) el.textContent = String(v); }
 
-      let activeSev = 'ALL';
-      let expanded = true;
-
-      // Row click => open CVE link if present
-      allRows.forEach(tr => {
-        tr.addEventListener('click', (e) => {
-          const link = tr.querySelector('a.vuln-id');
-          if (link) window.open(link.href, '_blank', 'noopener,noreferrer');
+      // Open CVE on row click (if link exists)
+      rows.forEach(r=>{
+        r.addEventListener('click', ()=>{
+          const a = r.querySelector('a.cve');
+          if(a) window.open(a.href, '_blank', 'noopener,noreferrer');
         });
       });
 
-      // Sorting tables
-      document.querySelectorAll('table[data-table]').forEach(table => {
-        const thead = table.querySelector('thead');
+      // Sort tables
+      document.querySelectorAll('table[data-table]').forEach(table=>{
         const tbody = table.querySelector('tbody');
-        const headers = Array.from(thead.querySelectorAll('th[data-sort]'));
+        const ths = [...table.querySelectorAll('th[data-sort]')];
+        let key=null, dir=1;
 
-        let sortKey = null;
-        let sortDir = 1; // 1 asc, -1 desc
+        function getVal(tr, k){
+          const tds = tr.querySelectorAll('td');
+          if(k==='Severity') return tr.getAttribute('data-severity') || '';
+          if(k==='VulnerabilityID') return (tds[1]?.innerText||'').trim();
+          if(k==='PkgName') return (tds[2]?.innerText||'').trim();
+          if(k==='InstalledVersion') return (tds[3]?.innerText||'').trim();
+          if(k==='FixedVersion') return (tds[4]?.innerText||'').trim();
+          return '';
+        }
 
-        headers.forEach(th => {
-          th.addEventListener('click', () => {
-            const key = th.getAttribute('data-sort');
-            if (sortKey === key) sortDir *= -1;
-            else { sortKey = key; sortDir = 1; }
+        ths.forEach(th=>{
+          th.addEventListener('click', ()=>{
+            const k = th.getAttribute('data-sort');
+            if(key===k) dir*=-1; else { key=k; dir=1; }
 
-            const rows = Array.from(tbody.querySelectorAll('tr[data-row]'));
-            rows.sort((a,b) => {
-              const av = getCellValue(a, key);
-              const bv = getCellValue(b, key);
-
-              if (key === 'Severity'){
-                return (severityOrder[av] - severityOrder[bv]) * sortDir;
-              }
-              // string compare
-              return String(av).localeCompare(String(bv), 'fr', {numeric:true, sensitivity:'base'}) * sortDir;
+            const rs = [...tbody.querySelectorAll('tr[data-row]')];
+            rs.sort((a,b)=>{
+              const av = getVal(a,k), bv = getVal(b,k);
+              if(k==='Severity') return (severityOrder[av]-severityOrder[bv]) * dir;
+              return String(av).localeCompare(String(bv), 'fr', {numeric:true, sensitivity:'base'}) * dir;
             });
-
-            rows.forEach(r => tbody.appendChild(r));
-            updateMetrics(); // metrics after sort/filter/search
+            rs.forEach(r=>tbody.appendChild(r));
+            updateMetrics();
           });
         });
       });
 
-      function getCellValue(tr, key){
-        // based on column order
-        const tds = tr.querySelectorAll('td');
-        switch(key){
-          case 'Severity': return tr.getAttribute('data-severity') || '';
-          case 'VulnerabilityID': return (tds[1]?.innerText || '').trim();
-          case 'PkgName': return (tds[2]?.innerText || '').trim();
-          case 'InstalledVersion': return (tds[3]?.innerText || '').trim();
-          case 'FixedVersion': return (tds[4]?.innerText || '').trim();
-          default: return '';
-        }
-      }
-
-      // Filtering by severity
-      btns.forEach(b => {
-        b.addEventListener('click', () => {
-          btns.forEach(x => x.classList.remove('active'));
-          b.classList.add('active');
-          activeSev = b.getAttribute('data-sev');
-          applyFilters();
+      // Target collapse buttons
+      document.querySelectorAll('[data-toggle]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const card = btn.closest('[data-target]');
+          const wrap = card.querySelector('[data-wrap]');
+          if(!wrap) return;
+          const hidden = wrap.style.display === 'none';
+          wrap.style.display = hidden ? '' : 'none';
+          btn.textContent = hidden ? 'Replier' : 'Déplier';
         });
       });
 
-      // Search filter
-      function normalize(s){ return (s||'').toLowerCase(); }
-      function applyFilters(){
-        const q = normalize(searchInput.value);
+      // Expand all
+      if(expandAll){
+        expandAll.addEventListener('click', ()=>{
+          allExpanded = !allExpanded;
+          document.querySelectorAll('[data-wrap]').forEach(w=> w.style.display = allExpanded ? '' : 'none');
+          document.querySelectorAll('[data-toggle]').forEach(b=> b.textContent = allExpanded ? 'Replier' : 'Déplier');
+          expandAll.textContent = allExpanded ? 'Tout replier' : 'Tout déplier';
+        });
+      }
 
-        allRows.forEach(tr => {
-          const sev = tr.getAttribute('data-severity') || '';
-          const hay = normalize(tr.getAttribute('data-search') || '');
-          const matchSev = (activeSev === 'ALL') || (sev === activeSev);
-          const matchQ = !q || hay.includes(q);
-          tr.style.display = (matchSev && matchQ) ? '' : 'none';
+      // Filtering & search
+      function apply(){
+        const term = (q.value||'').toLowerCase().trim();
+
+        rows.forEach(r=>{
+          const sev = r.getAttribute('data-severity') || '';
+          const hay = (r.getAttribute('data-search')||'').toLowerCase();
+          const okSev = (active==='ALL') || (sev===active);
+          const okQ = !term || hay.includes(term);
+          r.style.display = (okSev && okQ) ? '' : 'none';
         });
 
-        // hide target cards with no visible rows (but keep "no vuln" cards)
-        allTargets.forEach(card => {
-          const rows = Array.from(card.querySelectorAll('tr[data-row]'));
-          if (!rows.length) { card.style.display = ''; return; }
-          const anyVisible = rows.some(r => r.style.display !== 'none');
-          card.style.display = anyVisible ? '' : 'none';
+        // Hide targets with no visible rows (but keep no-vuln cards)
+        targets.forEach(t=>{
+          const tRows = [...t.querySelectorAll('tr[data-row]')];
+          if(!tRows.length){ t.style.display=''; return; }
+          t.style.display = tRows.some(r=>r.style.display!=='none') ? '' : 'none';
         });
 
         updateMetrics();
       }
 
-      searchInput.addEventListener('input', applyFilters);
+      btns.forEach(b=>{
+        b.addEventListener('click', ()=>{
+          btns.forEach(x=>x.classList.remove('active'));
+          b.classList.add('active');
+          active = b.getAttribute('data-sev');
+          apply();
+        });
+      });
+
+      q.addEventListener('input', apply);
 
       // Keyboard shortcuts
-      document.addEventListener('keydown', (e) => {
-        if (e.key === '/' && document.activeElement !== searchInput) {
-          e.preventDefault();
-          searchInput.focus();
+      document.addEventListener('keydown', (e)=>{
+        if(e.key==='/' && document.activeElement!==q){
+          e.preventDefault(); q.focus();
         }
-        if (e.key === 'Escape') {
-          searchInput.value = '';
-          activeSev = 'ALL';
-          btns.forEach(x => x.classList.remove('active'));
-          const allBtn = btns.find(x => x.getAttribute('data-sev') === 'ALL');
-          if (allBtn) allBtn.classList.add('active');
-          applyFilters();
+        if(e.key==='Escape'){
+          q.value='';
+          active='ALL';
+          btns.forEach(x=>x.classList.remove('active'));
+          (btns.find(x=>x.getAttribute('data-sev')==='ALL')||btns[0])?.classList.add('active');
+          apply();
         }
       });
 
-      // Expand / collapse all cards (table visibility)
-      btnExpand?.addEventListener('click', () => {
-        expanded = !expanded;
-        document.querySelectorAll('.table-wrap').forEach(w => w.style.display = expanded ? '' : 'none');
-        btnExpand.classList.toggle('active', !expanded);
-        btnExpand.innerHTML = expanded
-          ? '<i class="fa-solid fa-up-right-and-down-left-from-center"></i> Tout déplier'
-          : '<i class="fa-solid fa-down-left-and-up-right-to-center"></i> Tout replier';
-      });
-
-      // Metrics
-      function setText(id, v){ const el=document.getElementById(id); if(el) el.textContent = String(v); }
-
+      // Metrics (global + per-target chips)
       function updateMetrics(){
-        let total=0, c=0, h=0, m=0, l=0;
-        const visibleRows = allRows.filter(r => r.style.display !== 'none');
-        visibleRows.forEach(r => {
+        let total=0,c=0,h=0,m=0,l=0,visible=0;
+
+        const visibleRows = rows.filter(r=>r.style.display!=='none');
+        visible = visibleRows.length;
+
+        // total across all (unfiltered) for header
+        rows.forEach(r=>{
           total++;
-          const sev = r.getAttribute('data-severity');
-          if (sev === 'CRITICAL') c++;
-          else if (sev === 'HIGH') h++;
-          else if (sev === 'MEDIUM') m++;
-          else if (sev === 'LOW') l++;
+          const s=r.getAttribute('data-severity');
+          if(s==='CRITICAL') c++;
+          else if(s==='HIGH') h++;
+          else if(s==='MEDIUM') m++;
+          else if(s==='LOW') l++;
         });
 
         setText('mTotal', total);
+        setText('mTotal2', total);
         setText('mCritical', c);
         setText('mHigh', h);
         setText('mMedium', m);
         setText('mLow', l);
 
-        const visibleTargets = allTargets.filter(t => t.style.display !== 'none').length;
+        const visibleTargets = targets.filter(t=>t.style.display!=='none').length;
         setText('mTargets', visibleTargets);
+        setText('mVisible', visible);
 
-        // Per-target chips
-        allTargets.forEach(card => {
-          const rows = Array.from(card.querySelectorAll('tr[data-row]')).filter(r => r.style.display !== 'none');
-          const counts = {CRITICAL:0,HIGH:0,MEDIUM:0,LOW:0,TOTAL:0};
-          rows.forEach(r => {
+        // per-target chips (based on visible rows, so chips follow filters/search)
+        targets.forEach(t=>{
+          const tRows = [...t.querySelectorAll('tr[data-row]')].filter(r=>r.style.display!=='none');
+          const counts={CRITICAL:0,HIGH:0,MEDIUM:0,LOW:0,TOTAL:0};
+          tRows.forEach(r=>{
             counts.TOTAL++;
-            const s = r.getAttribute('data-severity');
-            if (counts[s] !== undefined) counts[s]++;
+            const s=r.getAttribute('data-severity');
+            if(counts[s]!=null) counts[s]++;
           });
-          card.querySelectorAll('[data-chip]').forEach(b => {
-            const k = b.getAttribute('data-chip');
-            b.textContent = counts[k] ?? 0;
+          t.querySelectorAll('[data-chip]').forEach(el=>{
+            const k=el.getAttribute('data-chip');
+            el.textContent = counts[k] ?? 0;
           });
         });
       }
 
-      // Init
-      applyFilters();
+      // init
+      apply();
     })();
   </script>
 </body>
