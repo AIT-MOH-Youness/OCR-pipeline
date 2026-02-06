@@ -1,0 +1,66 @@
+version: "3.9"
+
+services:
+  jenkins:
+    build:
+      context: ./jenkins_custom
+      dockerfile: Dockerfile   # your working custom Dockerfile
+    container_name: jenkins
+    user: root
+    ports:
+      - "8080:8080"
+      - "50000:50000"   # Jenkins agents
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock   # Docker-in-Docker
+    environment:
+      JAVA_OPTS: "-Djava.awt.headless=true"
+    depends_on:
+      - sonarqube
+    networks:
+      - ocr-net
+
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube
+    ports:
+      - "9000:9000"
+    environment:
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+      SONAR_JAVA_JDK_HOME: "/usr/lib/jvm/java-17-openjdk-amd64"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+    networks:
+      - ocr-net
+
+  jenkins-agent:
+    build:
+      context: ./jenkins_custom_agent
+      dockerfile: Dockerfile
+    container_name: jenkins-agent
+    user: root
+    environment:
+      JENKINS_URL: ${JENKINS_URL:-http://jenkins:8080}
+      JENKINS_AGENT_NAME: "ocr-agent"
+      JENKINS_AGENT_WORKDIR: "/home/jenkins/agent"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - jenkins_agent_home:/home/jenkins/agent
+    depends_on:
+      - jenkins
+    networks:
+      - ocr-net
+    command: >
+      sh -c "chmod 666 /var/run/docker.sock && 
+      java -jar /usr/share/jenkins/agent.jar -jnlpUrl http://jenkins:8080/computer/ocr-agent/jenkins-agent.jnlp"
+
+
+volumes:
+  jenkins_home:
+  sonarqube_data:
+  sonarqube_extensions:
+
+networks:
+  ocr-net:
+    driver: bridge
