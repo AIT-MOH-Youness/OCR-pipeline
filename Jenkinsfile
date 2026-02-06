@@ -5,6 +5,7 @@ pipeline {
     
     environment {
         IMAGE_NAME = 'ocr-api'
+        IMAGE_TAG = "${env.BUILD_NUMBER}"
         CONTAINER_NAME = 'ocr-api-container'
         APP_PORT = '8000'
     }
@@ -61,7 +62,8 @@ pipeline {
                     docker rm -f $CONTAINER_NAME 2>/dev/null || true
                     docker rmi -f $IMAGE_NAME:test 2>/dev/null || true
 
-                    docker build -t $IMAGE_NAME:test .
+                    docker build -t $IMAGE_NAME:$IMAGE_TAG .
+                    docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:latest
                 '''
             }
         }
@@ -71,7 +73,7 @@ pipeline {
                 sh '''
                     docker run --rm \
                         -e PYTHONPATH=/app \
-                        $IMAGE_NAME:test \
+                        $IMAGE_NAME:$IMAGE_TAG \
                         pytest
                 '''
             }
@@ -97,7 +99,7 @@ pipeline {
         stage('Tag production image') {
             steps {
                 sh '''
-                    docker tag $IMAGE_NAME:test $IMAGE_NAME:latest
+                    docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:latest
                 '''
             }
         }
@@ -110,7 +112,7 @@ pipeline {
                     docker run -d \
                         --name $CONTAINER_NAME \
                         -p $APP_PORT:8000 \
-                        $IMAGE_NAME:latest
+                        $IMAGE_NAME:$IMAGE_TAG
                 '''
             }
         }
