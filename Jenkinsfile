@@ -46,6 +46,16 @@ pipeline {
                 }
             }
         }
+        
+        stage('Quality Gate') {
+            steps {
+                withSonarQubeEnv('SonarQube-Server') {
+                    timeout(time: 2, unit: 'MINUTES') {
+                        waitForQualityGate abortPipeline: true
+                    }   
+                }
+            }
+        }
 
         stage('Clean old Docker image') {
             steps {
