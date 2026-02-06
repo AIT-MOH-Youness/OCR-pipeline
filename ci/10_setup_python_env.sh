@@ -5,8 +5,6 @@ python3 -m venv venv
 venv/bin/pip install --upgrade pip
 venv/bin/pip install -r requirements.txt
 
-# Ensure pytest plugins are present + compatible
-venv/bin/pip install -U pytest pytest-cov pytest-xdist
 
 echo "== pytest version =="
 venv/bin/pytest --version
