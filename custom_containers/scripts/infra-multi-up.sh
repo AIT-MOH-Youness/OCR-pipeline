@@ -18,8 +18,8 @@ info() { echo -e "\n✅ $*\n"; }
 
 # Ensure you're running from repo root (so ../jenkins_custom exists for copy role)
 REPO_ROOT="$(pwd)"
-[ -d "$REPO_ROOT/jenkins_custom" ] || echo "!!!  jenkins_custom/ not found in repo root (copy step may fail)."
-[ -d "$REPO_ROOT/jenkins_custom_agent" ] || echo "!!!  jenkins_custom_agent/ not found in repo root (copy step may fail)."
+[ -d "$REPO_ROOT/../jenkins_custom" ] || echo "!!!  jenkins_custom/ not found in repo root (copy step may fail)."
+[ -d "$REPO_ROOT/../jenkins_custom_agent" ] || echo "!!!  jenkins_custom_agent/ not found in repo root (copy step may fail)."
 
 cd "$ANSIBLE_DIR"
 
