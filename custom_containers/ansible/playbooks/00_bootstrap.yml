@@ -1,4 +1,4 @@
-- name: Bootstrap all nodes (Docker + basics)
+- name: Bootstrap all servers
   hosts: all
   become: true
   roles:
