@@ -117,7 +117,7 @@ Tip: set the SSH user and key for each host, for example:
 
 ```ini
 ansible_user=ci-admin
-ansible_ssh_private_key_file=~/.ssh/id_ed25519
+ansible_ssh_private_key_file=~/.ssh/id_edxxxx
 ```
 
 ---
