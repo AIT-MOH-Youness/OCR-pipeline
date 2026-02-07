@@ -1,0 +1,32 @@
+# SSH user (common)
+ansible_user: ci-admin
+ansible_ssh_private_key_file: ~/.ssh/id_edxxxx
+
+# Host-specific variables (can be overridden in host_vars)
+agent_host: 127.0.0.1
+jenkins_host: 127.0.0.1
+sonarqube_host: 127.0.0.1
+
+
+# Where the project will live on each target host
+project_root: /opt/ocr-infra
+
+# Docker network name (local to each host)
+docker_network: ocr-net
+
+# Image names/tags for custom builds
+jenkins_image_name: ocr-jenkins
+jenkins_agent_image_name: ocr-jenkins-agent
+image_tag: latest
+
+# Jenkins agent settings (adjust later if you use secret)
+jenkins_agent_name: ocr-agent
+jenkins_agent_workdir: /home/jenkins/agent
+
+# Ports (can be overridden per host_vars)
+jenkins_ports:
+  - "8080:8080"
+  - "50000:50000"
+
+sonar_ports:
+  - "9000:9000"

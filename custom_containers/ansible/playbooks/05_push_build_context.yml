@@ -1,0 +1,11 @@
+- name: Push build contexts to Jenkins host(s)
+  hosts: jenkins
+  become: true
+  roles:
+    - common_files
+
+- name: Push build contexts to Agent host(s)
+  hosts: agents
+  become: true
+  roles:
+    - common_files

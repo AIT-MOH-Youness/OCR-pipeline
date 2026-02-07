@@ -1,0 +1,2 @@
+ansible_host: "{{ jenkins_host }}"
+node_role: jenkins

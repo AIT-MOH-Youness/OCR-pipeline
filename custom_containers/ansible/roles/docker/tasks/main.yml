@@ -1,0 +1,42 @@
+- name: Install base packages
+  apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+      - git
+      - python3
+      - python3-pip
+    update_cache: true
+    state: present
+
+- name: Install Docker via get.docker.com (simple for labs)
+  shell: |
+    set -eux
+    curl -fsSL https://get.docker.com | sh
+  args:
+    creates: /usr/bin/docker
+
+- name: Install docker compose plugin (optional)
+  apt:
+    name: docker-compose-plugin
+    state: present
+  ignore_errors: true
+
+- name: Ensure Docker is running
+  service:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Ensure user is in docker group
+  user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: true
+
+- name: Install Ansible Docker collection dependency on targets (python docker SDK)
+  pip:
+    name: docker
+    executable: pip3

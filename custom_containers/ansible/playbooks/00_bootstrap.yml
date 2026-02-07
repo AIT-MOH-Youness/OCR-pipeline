@@ -1,0 +1,5 @@
+- name: Bootstrap all nodes (Docker + basics)
+  hosts: all
+  become: true
+  roles:
+    - docker

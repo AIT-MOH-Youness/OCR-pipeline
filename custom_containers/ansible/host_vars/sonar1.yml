@@ -1,0 +1,2 @@
+ansible_host: "{{ sonarqube_host }}"
+node_role: sonarqube

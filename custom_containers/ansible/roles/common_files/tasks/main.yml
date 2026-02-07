@@ -1,0 +1,19 @@
+- name: Ensure project root exists
+  file:
+    path: "{{ project_root }}"
+    state: directory
+    mode: "0755"
+
+- name: Copy Jenkins custom Dockerfile context (if exists locally)
+  copy:
+    src: "{{ playbook_dir }}/../../jenkins_custom/"
+    dest: "{{ project_root }}/jenkins_custom/"
+    mode: preserve
+  ignore_errors: true
+
+- name: Copy Jenkins agent custom Dockerfile context (if exists locally)
+  copy:
+    src: "{{ playbook_dir }}/../../jenkins_custom_agent/"
+    dest: "{{ project_root }}/jenkins_custom_agent/"
+    mode: preserve
+  ignore_errors: true

@@ -41,7 +41,13 @@ services:
     container_name: jenkins-agent
     user: root
     environment:
+      # Internal Jenkins URL for the agent (inside docker network):
+      # keep it as "jenkins" because container DNS works in single-host.
       JENKINS_URL: ${JENKINS_URL:-http://jenkins:8080}
+
+      # Public host (what YOU type in the browser): localhost / IP / hostname
+      INFRA_HOST: ${INFRA_HOST:-localhost}
+
       JENKINS_AGENT_NAME: "ocr-agent"
       JENKINS_AGENT_WORKDIR: "/home/jenkins/agent"
     volumes:
@@ -52,9 +58,9 @@ services:
     networks:
       - ocr-net
     command: >
-      sh -c "chmod 666 /var/run/docker.sock && 
-      java -jar /usr/share/jenkins/agent.jar -jnlpUrl http://jenkins:8080/computer/ocr-agent/jenkins-agent.jnlp"
-
+      sh -c "chmod 666 /var/run/docker.sock &&
+      java -jar /usr/share/jenkins/agent.jar
+      -jnlpUrl http://${INFRA_HOST}:8080/computer/ocr-agent/jenkins-agent.jnlp"
 
 volumes:
   jenkins_home:

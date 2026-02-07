@@ -1,0 +1,17 @@
+- name: Deploy Jenkins node (custom image)
+  hosts: jenkins
+  become: true
+  roles:
+    - jenkins
+
+- name: Deploy SonarQube node
+  hosts: sonarqube
+  become: true
+  roles:
+    - sonarqube
+
+- name: Deploy Jenkins Agent node (custom image)
+  hosts: agents
+  become: true
+  roles:
+    - jenkins_agent

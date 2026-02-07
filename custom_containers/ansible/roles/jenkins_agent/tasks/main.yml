@@ -1,0 +1,32 @@
+- name: Ensure docker network exists (local to this host)
+  community.docker.docker_network:
+    name: "{{ docker_network }}"
+    state: present
+
+- name: Build custom Jenkins agent image on target host
+  community.docker.docker_image:
+    name: "{{ jenkins_agent_image_name }}"
+    tag: "{{ image_tag }}"
+    build:
+      path: "{{ project_root }}/jenkins_custom_agent"
+      dockerfile: Dockerfile
+    source: build
+
+- name: Run Jenkins agent container (custom image)
+  community.docker.docker_container:
+    name: jenkins-agent
+    image: "{{ jenkins_agent_image_name }}:{{ image_tag }}"
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - jenkins_agent_home:/home/jenkins/agent
+    env:
+      JENKINS_URL: "http://{{ hostvars[groups['jenkins'][0]].ansible_host }}:8080"
+      JENKINS_AGENT_NAME: "{{ jenkins_agent_name }}"
+      JENKINS_AGENT_WORKDIR: "{{ jenkins_agent_workdir }}"
+    command: >-
+      sh -c "chmod 666 /var/run/docker.sock &&
+      java -jar /usr/share/jenkins/agent.jar -jnlpUrl http://{{ hostvars[groups['jenkins'][0]].ansible_host }}:8080/computer/{{ jenkins_agent_name }}/jenkins-agent.jnlp"
+    networks:
+      - name: "{{ docker_network }}"
+    restart_policy: unless-stopped
