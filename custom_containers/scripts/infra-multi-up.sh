@@ -27,12 +27,12 @@ info "Installing Ansible Docker collection (community.docker)"
 ansible-galaxy collection install community.docker
 
 info "00_bootstrap.yml (install docker + deps on all target hosts)"
-ansible-playbook -i "$INVENTORY" playbooks/00_bootstrap.yml
+ansible-playbook -i "$INVENTORY" playbooks/00_bootstrap.yml --ask-become-pass
 
 info "05_push_build_context.yml (copy your custom Dockerfile contexts to targets)"
-ansible-playbook -i "$INVENTORY" playbooks/05_push_build_context.yml
+ansible-playbook -i "$INVENTORY" playbooks/05_push_build_context.yml --ask-become-pass
 
 info "10_deploy_multi.yml (build custom images on targets + run containers)"
-ansible-playbook -i "$INVENTORY" playbooks/10_deploy_multi.yml
+ansible-playbook -i "$INVENTORY" playbooks/10_deploy_multi.yml --ask-become-pass
 
 info "DONE! Multi-host infra deployed."
