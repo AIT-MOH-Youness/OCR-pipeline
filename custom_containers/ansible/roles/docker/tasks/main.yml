@@ -1,3 +1,18 @@
+---
+# ============================
+# 0. Wait for apt lock (BOOT SAFETY)
+# ============================
+- name: Wait for apt lock to be released
+  shell: |
+    while fuser /var/lib/apt/lists/lock >/dev/null 2>&1 \
+       || fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+      sleep 3
+    done
+  changed_when: false
+
+# ============================
+# 1. Base packages
+# ============================
 - name: Install base packages
   apt:
     name:
@@ -10,41 +25,87 @@
       - python3-pip
     state: present
     update_cache: yes
-  register: apt_result
+  register: apt_base
   retries: 15
   delay: 10
-  until: apt_result is succeeded
+  until: apt_base is succeeded
 
-- name: Create keyrings directory
+# ============================
+# 2. Keyrings directory
+# ============================
+- name: Ensure apt keyrings directory exists
   file:
     path: /etc/apt/keyrings
     state: directory
     mode: "0755"
 
-- name: Install gnupg (needed for dearmor)
-  apt:
-    name: gnupg
-    state: present
-    update_cache: yes
-  register: apt_gnupg
-  retries: 10
-  delay: 10
-  until: apt_gnupg is succeeded
-
-- name: Download Docker GPG key and dearmor to keyring
+# ============================
+# 3. Docker GPG key (DEARMORED, CORRECT)
+# ============================
+- name: Install Docker GPG key (dearmored)
   shell: |
-    set -euo pipefail
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    set -e
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+      | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
     chmod 0644 /etc/apt/keyrings/docker.gpg
   args:
     creates: /etc/apt/keyrings/docker.gpg
 
-- name: Add Docker repository (signed-by keyring)
+# ============================
+# 4. Docker repository (signed-by)
+# ============================
+- name: Add Docker apt repository
   apt_repository:
-    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+    repo: >
+      deb [arch={{ 'amd64' if ansible_architecture == 'x86_64' else ansible_architecture }}
+      signed-by=/etc/apt/keyrings/docker.gpg]
+      https://download.docker.com/linux/ubuntu
+      {{ ansible_distribution_release }} stable
     state: present
     filename: docker
 
+# ============================
+# 5. Update apt cache (post repo)
+# ============================
 - name: Update apt cache
   apt:
     update_cache: yes
+  register: apt_update
+  retries: 15
+  delay: 10
+  until: apt_update is succeeded
+
+# ============================
+# 6. Install Docker Engine
+# ============================
+- name: Install Docker Engine
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+  register: apt_docker
+  retries: 15
+  delay: 10
+  until: apt_docker is succeeded
+
+# ============================
+# 7. Enable Docker service
+# ============================
+- name: Enable and start Docker
+  systemd:
+    name: docker
+    enabled: true
+    state: started
+
+# ============================
+# 8. Add ci-admin to docker group
+# ============================
+- name: Add ci-admin to docker group
+  user:
+    name: ci-admin
+    groups: docker
+    append: yes
