@@ -1,23 +1,68 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-COMPOSE_FILE="${COMPOSE_FILE:-"$SCRIPT_DIR/../docker-compose.yml"}"
+# Install Docker Engine + Docker Compose plugin (v2) on Ubuntu/Debian
+# Idempotent: re-running won't break anything.
 
-# The address YOU choose for accessing services from your browser
-# Examples:
-#   INFRA_HOST=localhost ./infra-single-up.sh
-#   INFRA_HOST=192.168.1.50 ./infra-single-up.sh
-#   INFRA_HOST=ci.myhost.local ./infra-single-up.sh
-export INFRA_HOST="${INFRA_HOST:-localhost}"
+if [[ $EUID -ne 0 ]]; then
+  SUDO="sudo"
+else
+  SUDO=""
+fi
 
-[ -f "$COMPOSE_FILE" ] || { echo "]$COMPOSE_FILE not found"; exit 1; }
+log() { echo -e "✅ $*"; }
+warn() { echo -e "⚠️  $*"; }
+err() { echo -e "❌ $*" >&2; }
 
-echo "✅ Starting single-host infra (public address = ${INFRA_HOST})"
+# Quick check
+if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+  log "Docker and Docker Compose are already installed."
+  docker --version
+  docker compose version
+  exit 0
+fi
 
-docker compose -f "$COMPOSE_FILE" up -d --build
+log "Installing prerequisites..."
+$SUDO apt-get update -y
+$SUDO apt-get install -y ca-certificates curl gnupg
 
-echo
-echo "🔗 Access URLs:"
-echo "  Jenkins  : http://${INFRA_HOST}:8080"
-echo "  SonarQube: http://${INFRA_HOST}:9000"
+log "Setting up Docker apt keyring..."
+$SUDO install -m 0755 -d /etc/apt/keyrings
+
+# Download & dearmor key (always refresh to avoid old/broken keys)
+$SUDO rm -f /etc/apt/keyrings/docker.gpg
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | $SUDO gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+$SUDO chmod a+r /etc/apt/keyrings/docker.gpg
+
+log "Adding Docker repository..."
+CODENAME="$(. /etc/os-release && echo "${VERSION_CODENAME:-}")"
+if [[ -z "$CODENAME" ]]; then
+  err "Could not detect Ubuntu codename from /etc/os-release"
+  exit 1
+fi
+
+ARCH="$(dpkg --print-architecture)"
+$SUDO tee /etc/apt/sources.list.d/docker.list > /dev/null <<EOF
+deb [arch=${ARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu ${CODENAME} stable
+EOF
+
+log "Installing Docker Engine + Compose plugin..."
+$SUDO apt-get update -y
+$SUDO apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+log "Enabling Docker service..."
+$SUDO systemctl enable --now docker
+
+# Add current user to docker group (so you can run docker without sudo)
+USER_TO_ADD="${SUDO_USER:-$USER}"
+if id -nG "$USER_TO_ADD" | grep -qw docker; then
+  log "User '$USER_TO_ADD' is already in docker group."
+else
+  log "Adding user '$USER_TO_ADD' to docker group..."
+  $SUDO usermod -aG docker "$USER_TO_ADD"
+  warn "Log out / log in (or run: newgrp docker) to use docker without sudo."
+fi
+
+log "Installed successfully:"
+docker --version || true
+docker compose version || true
